@@ -54,7 +54,7 @@ async function initBot() {
 initBot();
 
 setInterval(() => {
-  axios.get("https://bot-2g3q.onrender.com")
+  axios.get("https://davomatbot-gh31.onrender.com")
     .then(() => console.log("🔄 Self-ping OK"))
     .catch((err) => console.error("❌ Self-ping error:", err.message));
 }, 60 * 1000);
