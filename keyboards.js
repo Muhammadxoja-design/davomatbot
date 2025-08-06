@@ -5,7 +5,6 @@ export function createGradeKeyboard(grades) {
     Markup.button.callback(`${grade.grade}-sinflar`, `grade_${grade.grade}`)
   );
   
-  // Arrange buttons in rows of 2
   const rows = [];
   for (let i = 0; i < buttons.length; i += 2) {
     rows.push(buttons.slice(i, i + 2));
@@ -21,7 +20,6 @@ export function createClassKeyboard(classes, grade) {
     Markup.button.callback(cls.class_name, `class_${cls.class_name}`)
   );
   
-  // Arrange buttons in rows of 2
   const rows = [];
   for (let i = 0; i < buttons.length; i += 2) {
     rows.push(buttons.slice(i, i + 2));
@@ -48,10 +46,8 @@ export function createStudentKeyboard(students, className, page = 0, pageSize = 
     );
   });
   
-  // Arrange buttons in rows of 1 for better readability
   const rows = buttons.map(button => [button]);
   
-  // Pagination buttons
   const paginationButtons = [];
   if (page > 0) {
     paginationButtons.push(
@@ -68,7 +64,6 @@ export function createStudentKeyboard(students, className, page = 0, pageSize = 
     rows.push(paginationButtons);
   }
   
-  // Navigation buttons
   const grade = className.split('-')[0];
   rows.push([
     Markup.button.callback('⬅️ Sinfga qaytish', `grade_${grade}`),
@@ -81,7 +76,6 @@ export function createStudentKeyboard(students, className, page = 0, pageSize = 
 export function createAttendanceKeyboard(studentId, className) {
   const buttons = [];
   
-  // Hours for attendance marking (1-6)
   for (let hour = 1; hour <= 6; hour++) {
     buttons.push(
       Markup.button.callback(`${hour}-soat ✅`, `mark_${studentId}_${hour}_present`),
@@ -89,19 +83,16 @@ export function createAttendanceKeyboard(studentId, className) {
     );
   }
   
-  // Arrange in rows of 2
   const rows = [];
   for (let i = 0; i < buttons.length; i += 2) {
     rows.push(buttons.slice(i, i + 2));
   }
   
-  // Quick mark all buttons
   rows.push([
     Markup.button.callback('Barcha soatlar ✅', `mark_all_${studentId}_present`),
     Markup.button.callback('Barcha soatlar ❌', `mark_all_${studentId}_absent`)
   ]);
   
-  // Navigation
   rows.push([
     Markup.button.callback('⬅️ O\'quvchilarga qaytish', `class_${className}`),
     Markup.button.callback('🏠 Bosh sahifa', 'main_menu')

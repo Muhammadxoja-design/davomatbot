@@ -1,5 +1,6 @@
 const { Telegraf, session } = require('telegraf');
 const config = require('./config');
+const axios = require("axios");
 const { initDatabase } = require('./database');
 const { registerStartHandler } = require('./handlers/start');
 const { registerAttendanceHandlers } = require('./handlers/attendance');
