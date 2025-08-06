@@ -50,7 +50,6 @@ async function initBot() {
     }
 }
 
-// Botni ishga tushirish
 initBot();
 
 setInterval(() => {

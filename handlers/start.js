@@ -107,7 +107,7 @@ function registerStartHandler(bot) {
 • Oylik hisobot<br>
 • Yillik statistika
 
-❓ Savollar bo'lsa <a href="https://t.me/m_kimyonazarov">@support_username</a> ga murojaat qiling.
+❓ Savollar bo'lsa <a href="https://t.me/m_kimyonazarov">@m_kimyonazarov</a> ga murojaat qiling.
         `;
 
     await ctx.editMessageText(helpMessage, {
