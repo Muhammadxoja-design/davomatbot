@@ -1,12 +1,13 @@
 const { Telegraf, session } = require('telegraf');
 const config = require('./config');
-const axios = require("axios");
 const { initDatabase } = require('./database');
 const { registerStartHandler } = require('./handlers/start');
 const { registerAttendanceHandlers } = require('./handlers/attendance');
 const { registerReportHandlers } = require('./handlers/reports');
+const axios = require("axios");
 
 const bot = new Telegraf(config.BOT_TOKEN);
+
 
 bot.use(session());
 
@@ -20,18 +21,15 @@ async function initBot() {
         await initDatabase();
         console.log('✅ Ma\'lumotlar bazasi tayyor');
         
-        // Handlerlarni ro'yxatdan o'tkazish
         registerStartHandler(bot);
         registerAttendanceHandlers(bot);
         registerReportHandlers(bot);
         
-        // Botni ishga tushirish
         if (config.USE_WEBHOOK) {
-            // Webhook rejimi
             bot.launch({
                 webhook: {
                     domain: config.WEBHOOK_DOMAIN,
-                    port: config.PORT || 8000,
+                    port: config.PORT || 3000,
                     hookPath: '/webhook'
                 }
             });
@@ -41,7 +39,6 @@ async function initBot() {
         
         console.log('🤖 Bot ishga tushdi');
         
-        // Graceful shutdown
         process.once('SIGINT', () => bot.stop('SIGINT'));
         process.once('SIGTERM', () => bot.stop('SIGTERM'));
         
@@ -52,11 +49,5 @@ async function initBot() {
 }
 
 initBot();
-
-setInterval(() => {
-  axios.get("https://davomatbot-gh31.onrender.com")
-    .then(() => console.log("🔄 Self-ping OK"))
-    .catch((err) => console.error("❌ Self-ping error:", err.message));
-}, 60 * 1000);
 
 module.exports = bot;

@@ -1,3 +1,4 @@
+// Sana formatini o'zgartirish
 function formatDate(date) {
     if (typeof date === 'string') {
         date = new Date(date);
@@ -13,6 +14,7 @@ function formatDate(date) {
     return date.toLocaleDateString('uz-UZ', options);
 }
 
+// Joriy sanani olish
 function getCurrentDate() {
     const now = new Date();
     const year = now.getFullYear();
@@ -22,13 +24,16 @@ function getCurrentDate() {
     return `${year}-${month}-${day}`;
 }
 
+// Hafta boshi va oxirini olish
 function getWeekStartEnd() {
     const now = new Date();
-    const dayOfWeek = now.getDay(); 
+    const dayOfWeek = now.getDay(); // 0 - Yakshanba, 1 - Dushanba
     
+    // Dushanba boshi (1)
     const startOfWeek = new Date(now);
     startOfWeek.setDate(now.getDate() - dayOfWeek + 1);
     
+    // Shanba oxiri (0)
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(startOfWeek.getDate() + 6);
     
@@ -38,6 +43,7 @@ function getWeekStartEnd() {
     };
 }
 
+// Oy boshi va oxirini olish
 function getMonthStartEnd(year, month) {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0);
@@ -48,6 +54,7 @@ function getMonthStartEnd(year, month) {
     };
 }
 
+// Ma'lumotlar bazasi uchun sana formati
 function formatDateForDB(date) {
     if (typeof date === 'string') {
         return date;
@@ -60,6 +67,7 @@ function formatDateForDB(date) {
     return `${year}-${month}-${day}`;
 }
 
+// Davomat hisobotini formatlash
 function formatAttendanceReport(attendance, type = 'daily') {
     if (!attendance || attendance.length === 0) {
         return '❌ Ma\'lumotlar topilmadi.';
@@ -68,6 +76,7 @@ function formatAttendanceReport(attendance, type = 'daily') {
     let report = '';
     
     if (type === 'daily') {
+        // Soat bo'yicha guruhlash
         const groupedByHour = {};
         attendance.forEach(record => {
             if (!groupedByHour[record.hour]) {
@@ -97,10 +106,12 @@ function formatAttendanceReport(attendance, type = 'daily') {
     return report;
 }
 
+// Vaqt o'tkazish (sleep)
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// Xatoliklarni formatlash
 function formatError(error) {
     if (error.message) {
         return error.message;
@@ -108,6 +119,7 @@ function formatError(error) {
     return 'Noma\'lum xatolik yuz berdi';
 }
 
+// Matnni qisqartirish
 function truncateText(text, maxLength = 100) {
     if (text.length <= maxLength) {
         return text;
@@ -115,13 +127,15 @@ function truncateText(text, maxLength = 100) {
     return text.substring(0, maxLength - 3) + '...';
 }
 
+// Telegram message ni xavfsiz yuborish (uzun matn uchun)
 async function sendLongMessage(ctx, text, options = {}) {
-    const maxLength = 4096; 
+    const maxLength = 4096; // Telegram limit
     
     if (text.length <= maxLength) {
         return await ctx.reply(text, options);
     }
     
+    // Matnni bo'laklarga bo'lish
     const chunks = [];
     let currentChunk = '';
     const lines = text.split('\n');
@@ -141,10 +155,12 @@ async function sendLongMessage(ctx, text, options = {}) {
         chunks.push(currentChunk.trim());
     }
     
+    // Bo'laklarni yuborish
     for (let i = 0; i < chunks.length; i++) {
         const chunkOptions = i === chunks.length - 1 ? options : {};
         await ctx.reply(chunks[i], chunkOptions);
         
+        // Spam himoyasi uchun kechikish
         if (i < chunks.length - 1) {
             await sleep(100);
         }

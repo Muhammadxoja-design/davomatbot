@@ -9,7 +9,7 @@ export function getToday() {
 export function getWeekStart(date = new Date()) {
   const d = new Date(date);
   const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1); 
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday as start of week
   return new Date(d.setDate(diff));
 }
 

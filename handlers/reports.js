@@ -21,6 +21,7 @@ const {
 } = require('../utils/helpers');
 
 function registerReportHandlers(bot) {
+    // Hisobotlarni boshlash
     bot.action('reports', async (ctx) => {
         try {
             await ctx.editMessageText(
@@ -36,6 +37,7 @@ function registerReportHandlers(bot) {
         }
     });
     
+    // Kunlik hisobot
     bot.action('daily_report', async (ctx) => {
         try {
             const gradeLevels = await getGradeLevels();
@@ -56,6 +58,7 @@ function registerReportHandlers(bot) {
         }
     });
     
+    // Haftalik hisobot
     bot.action('weekly_report', async (ctx) => {
         try {
             const gradeLevels = await getGradeLevels();
@@ -76,6 +79,7 @@ function registerReportHandlers(bot) {
         }
     });
     
+    // Oylik hisobot
     bot.action('monthly_report', async (ctx) => {
         try {
             const gradeLevels = await getGradeLevels();
@@ -96,6 +100,7 @@ function registerReportHandlers(bot) {
         }
     });
     
+    // Hisobot uchun sinf darajasini tanlash
     bot.action(/^report_grade_(\d+)_(.+)$/, async (ctx) => {
         try {
             const gradeLevel = ctx.match[1];
@@ -119,6 +124,7 @@ function registerReportHandlers(bot) {
         }
     });
     
+    // Hisobot uchun sinfni tanlash
     bot.action(/^report_class_(.+)_(.+)$/, async (ctx) => {
         try {
             const className = ctx.match[1];
@@ -132,6 +138,7 @@ function registerReportHandlers(bot) {
             } else if (reportType === 'weekly') {
                 await generateWeeklyReport(ctx, className);
             } else if (reportType === 'monthly') {
+                // Oylik hisobot uchun oy va yil tanlash
                 await ctx.editMessageText(
                     `📊 *${className} sinfi - Oylik Hisobot*\n\nQaysi yilni tanlaysiz?`,
                     {
@@ -146,6 +153,7 @@ function registerReportHandlers(bot) {
         }
     });
     
+    // Yilni tanlash (oylik hisobot uchun)
     bot.action(/^year_(\d{4})$/, async (ctx) => {
         try {
             const year = ctx.match[1];
@@ -165,6 +173,7 @@ function registerReportHandlers(bot) {
         }
     });
     
+    // Oyni tanlash
     bot.action(/^month_(\d+)_(\d{4})$/, async (ctx) => {
         try {
             const month = ctx.match[1];
@@ -178,6 +187,7 @@ function registerReportHandlers(bot) {
         }
     });
     
+    // /hisobot komandasi
     bot.command('hisobot', async (ctx) => {
         await ctx.reply(
             '📊 Hisobotlarni ko\'rish uchun tugmani bosing:',
@@ -192,6 +202,7 @@ function registerReportHandlers(bot) {
     });
 }
 
+// Kunlik hisobot yaratish
 async function generateDailyReport(ctx, className) {
     try {
         const currentDate = getCurrentDate();
@@ -237,6 +248,7 @@ async function generateDailyReport(ctx, className) {
     }
 }
 
+// Haftalik hisobot yaratish
 async function generateWeeklyReport(ctx, className) {
     try {
         const { startDate, endDate } = getWeekStartEnd();
@@ -288,6 +300,7 @@ async function generateWeeklyReport(ctx, className) {
     }
 }
 
+// Oylik hisobot yaratish
 async function generateMonthlyReport(ctx, className, year, month) {
     try {
         const report = await getMonthlyReport(year, month, className);

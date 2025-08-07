@@ -1,8 +1,10 @@
 const fs = require('fs').promises;
 const path = require('path');
 
+// SQL fayldan ma'lumotlarni import qilish
 async function importStudentData(db) {
     try {
+        // Avval ma'lumotlar bor-yo'qligini tekshirish
         const existingCount = await db.get('SELECT COUNT(*) as count FROM students');
         
         if (existingCount.count > 0) {
@@ -12,6 +14,7 @@ async function importStudentData(db) {
         
         console.log('O\'quvchilar ma\'lumotlarini import qilish...');
         
+        // SQL faylni o'qish
         const sqlPath = path.join(__dirname, '../data/students.sql');
         
         try {
@@ -22,6 +25,7 @@ async function importStudentData(db) {
             await createDefaultData(db);
         }
         
+        // Sinflar jadvalini yangilash
         await updateClassesTable(db);
         
         console.log('✅ O\'quvchilar ma\'lumotlari muvaffaqiyatli import qilindi');
@@ -32,16 +36,20 @@ async function importStudentData(db) {
     }
 }
 
+// SQL kontentni qayta ishlash
 async function processSQLContent(db, sqlContent) {
+    // INSERT qatorlarini topish
     const insertMatch = sqlContent.match(/INSERT INTO `peoples` VALUES\s*(.+);/);
     
     if (!insertMatch) {
         throw new Error('SQL faylda INSERT qatorlari topilmadi');
     }
     
+    // Ma'lumotlarni parse qilish
     const valuesString = insertMatch[1];
     const rows = parseInsertValues(valuesString);
     
+    // Ma'lumotlarni bazaga yozish
     const insertQuery = `
         INSERT INTO students (
             class_name, class_count, first_name, last_name, father_name, 
@@ -61,6 +69,7 @@ async function processSQLContent(db, sqlContent) {
     console.log(`${rows.length} ta o'quvchi ma'lumoti import qilindi`);
 }
 
+// INSERT VALUES qatorlarini parse qilish
 function parseInsertValues(valuesString) {
     const rows = [];
     let currentPos = 0;
@@ -110,6 +119,7 @@ function parseInsertValues(valuesString) {
     return rows;
 }
 
+// Qator ma'lumotlarini parse qilish
 function parseRowData(rowString) {
     const values = [];
     let currentValue = '';
@@ -151,16 +161,19 @@ function parseRowData(rowString) {
     return values;
 }
 
+// Qiymatni qayta ishlash
 function processValue(value) {
     if (value === 'NULL' || value === '') {
         return null;
     }
     
+    // Qo'shtirnoqlarni olib tashlash
     if ((value.startsWith("'") && value.endsWith("'")) || 
         (value.startsWith('"') && value.endsWith('"'))) {
         value = value.slice(1, -1);
     }
     
+    // Boolean qiymatlar
     if (value === '0' || value === 'false') {
         return 0;
     }
@@ -168,6 +181,7 @@ function processValue(value) {
         return 1;
     }
     
+    // Raqamlar
     if (/^\d+$/.test(value)) {
         return parseInt(value);
     }
@@ -175,10 +189,9 @@ function processValue(value) {
     return value;
 }
 
-
-
 async function updateClassesTable(db) {
     try {
+        // Mavjud sinflarni olish
         const classes = await db.all(`
             SELECT 
                 class_name,
@@ -191,6 +204,7 @@ async function updateClassesTable(db) {
             GROUP BY class_name
         `);
         
+        // Sinflar jadvalini tozalash va qayta to'ldirish
         await db.run('DELETE FROM classes');
         
         const insertClassQuery = `

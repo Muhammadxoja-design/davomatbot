@@ -1,3 +1,4 @@
+// Asosiy menyu klaviaturasi
 function getMainMenuKeyboard() {
     return {
         inline_keyboard: [
@@ -12,6 +13,7 @@ function getMainMenuKeyboard() {
     };
 }
 
+// Sinf darajasi klaviaturasi
 function getGradeLevelKeyboard(gradeLevels, reportType = null) {
     const keyboard = [];
     
@@ -31,6 +33,7 @@ function getGradeLevelKeyboard(gradeLevels, reportType = null) {
     return { inline_keyboard: keyboard };
 }
 
+// Sinflar klaviaturasi
 function getClassKeyboard(classes, gradeLevel, reportType = null) {
     const keyboard = [];
     
@@ -54,9 +57,11 @@ function getClassKeyboard(classes, gradeLevel, reportType = null) {
     return { inline_keyboard: keyboard };
 }
 
+// O'quvchilar klaviaturasi
 function getStudentKeyboard(students, selectedStudents = []) {
     const keyboard = [];
     
+    // O'quvchilarni 1 tadan qator qilib joylashtirish (ko'proq ma'lumot ko'rish uchun)
     students.forEach(student => {
         const isSelected = selectedStudents.includes(student.id);
         const studentName = `${student.first_name || ''} ${student.last_name || ''}`.trim();
@@ -68,8 +73,10 @@ function getStudentKeyboard(students, selectedStudents = []) {
         }]);
     });
     
+    // Boshqaruv tugmalari
     const controlRow = [];
     
+    // Barchasini tanlash tugmasi
     controlRow.push({ text: '✅ Barchasini tanlash', callback_data: 'select_all_students' });
     controlRow.push({ text: '❌ Barchasini bekor qilish', callback_data: 'deselect_all_students' });
     keyboard.push(controlRow);
@@ -85,9 +92,11 @@ function getStudentKeyboard(students, selectedStudents = []) {
     return { inline_keyboard: keyboard };
 }
 
+// Soat tanlash klaviaturasi
 function getHourSelectionKeyboard() {
     const keyboard = [];
     
+    // 6 soatni 3x2 formatda joylashtirish
     for (let i = 1; i <= 6; i += 3) {
         const row = [];
         for (let j = i; j < Math.min(i + 3, 7); j++) {
@@ -104,6 +113,7 @@ function getHourSelectionKeyboard() {
     return { inline_keyboard: keyboard };
 }
 
+// Davomatni tasdiqlash klaviaturasi
 function getAttendanceConfirmKeyboard() {
     return {
         inline_keyboard: [
@@ -116,6 +126,7 @@ function getAttendanceConfirmKeyboard() {
     };
 }
 
+// Hisobot turlari klaviaturasi
 function getReportTypeKeyboard() {
     return {
         inline_keyboard: [
@@ -132,6 +143,7 @@ function getReportTypeKeyboard() {
     };
 }
 
+// Oy tanlash klaviaturasi
 function getMonthKeyboard(year) {
     const months = [
         'Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun',
@@ -140,6 +152,7 @@ function getMonthKeyboard(year) {
     
     const keyboard = [];
     
+    // Oylarni 3x4 formatda joylashtirish
     for (let i = 0; i < 12; i += 3) {
         const row = [];
         for (let j = i; j < Math.min(i + 3, 12); j++) {
@@ -156,10 +169,12 @@ function getMonthKeyboard(year) {
     return { inline_keyboard: keyboard };
 }
 
+// Yil tanlash klaviaturasi
 function getYearKeyboard() {
     const currentYear = new Date().getFullYear();
     const keyboard = [];
     
+    // Joriy yil va oldingi 2 yil
     for (let year = currentYear; year >= currentYear - 2; year--) {
         keyboard.push([{
             text: `${year}-yil`,

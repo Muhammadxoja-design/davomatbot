@@ -94,7 +94,7 @@ async function createTables() {
             last_activity DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     `);
-    
+
     // Indekslar yaratish
     await db.exec(`CREATE INDEX IF NOT EXISTS idx_students_class ON students(class_name)`);
     await db.exec(`CREATE INDEX IF NOT EXISTS idx_attendance_date ON attendance(date)`);
