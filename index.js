@@ -5,6 +5,8 @@ const { registerStartHandler } = require('./handlers/start');
 const { registerAttendanceHandlers } = require('./handlers/attendance');
 const { registerReportHandlers } = require('./handlers/reports');
 const axios = require("axios");
+const express = require('express');
+const app = express();
 
 const bot = new Telegraf(config.BOT_TOKEN);
 
@@ -47,6 +49,37 @@ async function initBot() {
         process.exit(1);
     }
 }
+
+app.get('/', (req, res) => res.send(`
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello World</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100vw;
+            height: 100vh;
+            background-color: #252525;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <h1>Assalomu alaykum</h1>
+</body>
+</html>
+    `));
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🌐 Web server ${PORT}-portda ishlayapti`);
+});
 
 initBot();
 
