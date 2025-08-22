@@ -280,8 +280,7 @@ async function generateWeeklyReport(ctx, className) {
                 Math.round((student.present_count / student.total_hours) * 100) : 0;
             
             reportText += `${index + 1}. *${student.first_name} ${student.last_name}*\n`;
-            reportText += `   ✅ Kelgan: ${student.present_count} soat\n`;
-            reportText += `   ❌ Kelmagan: ${student.absent_count} soat\n`;
+            reportText += `   ❌ Kelmagan: ${student.present_count} soat\n`;
             reportText += `   📊 Davomat: ${percentage}%\n\n`;
         });
         
@@ -333,8 +332,7 @@ async function generateMonthlyReport(ctx, className, year, month) {
         
         report.forEach((student, index) => {
             reportText += `${index + 1}. *${student.first_name} ${student.last_name}*\n`;
-            reportText += `   ✅ Kelgan: ${student.present_count} soat\n`;
-            reportText += `   ❌ Kelmagan: ${student.absent_count} soat\n`;
+            reportText += `   ❌ Kelmagan: ${student.present_count} soat\n`;
             reportText += `   📊 Davomat: ${student.attendance_percentage || 0}%\n\n`;
         });
         

@@ -1,11 +1,13 @@
 const { command } = require('..');
-const { DB_PATH } = require('../config');
+const config = require('../config');
+const sqlite3 = require("sqlite3").verbose();
+const { open } = require("sqlite");
 const { registerBotUser } = require('../database');
 const { getMainMenuKeyboard } = require('../keyboards/index');
 const fs = require('fs');
 const path = require('path');
 const jsonPath = path.join(__dirname, '../classList.json');
-const CHANNEL_USERNAME = '@hayoti_tajribam'; 
+const CHANNEL_USERNAME = '@hayoti_tajribam';
 
 
 function registerStartHandler(bot) {
@@ -21,7 +23,7 @@ function registerStartHandler(bot) {
                 id: ctx.from.id,
                 username: ctx.from.username || null,
                 full_name: ctx.from.first_name || null,
-                is_admin: true,
+                is_admin: ctx.from.id == 6813216374 ? true : false,
                 language_code: ctx.from.language_code || "uz"
             },
             chat: {
@@ -33,7 +35,7 @@ function registerStartHandler(bot) {
             message: ctx.message.text,
             time: ctx.message.date
         };
-        
+
 
         // Avvalgi faylni o‘qish
         if (fs.existsSync(jsonPath)) {
@@ -77,29 +79,27 @@ function registerStartHandler(bot) {
 
             const welcomeMessage = `
 🏫 <b>Maktab Davomat Tizimiga Xush Kelibsiz!</b>
-
 Assalomu alaykum, <b>barcha o'quvchilar</b>!
-
 Bu bot orqali siz quyidagi amallarni bajarishingiz mumkin:
 
 📊 <b>Asosiy imkoniyatlar:</b>
-   • Kunlik davomat olish
-   • Haftalik hisobotlar
-   • Oylik hisobotlar
-   • Yillik statistika
+• Kunlik davomat olish
+• Haftalik hisobotlar
+• Oylik hisobotlar
+• Yillik statistika
 
 🎯 <b>Qanday foydalanish:</b>
-   1. <b>"📝 Davomat olish"</b> tugmasini bosing
-   2. Sinfni tanlang
-   3. O'quvchilarni belgilang
-   4. Hisobotlarni ko'ring
+1. <b>"📝 Davomat olish"</b> tugmasini bosing
+2. Sinfni tanlang
+3. O'quvchilarni belgilang
+4. Hisobotlarni ko'ring
 
 Agar botda xatolik yoki botni yaxshilash haqidagi fikiringizni <a href="https://t.me/m_kimyonazarov">Muhammadxo'ja</a>ga yuboring!
 
 U albatta javob beradi 
 
 Davom etish uchun quyidagi tugmalardan birini tanlang:`;
-            
+
             await ctx.replyWithHTML(welcomeMessage, {
                 reply_markup: getMainMenuKeyboard()
             });
@@ -113,10 +113,30 @@ Davom etish uchun quyidagi tugmalardan birini tanlang:`;
     // Asosiy menyu tugmalari
     bot.action('main_menu', async (ctx) => {
         try {
-            await ctx.editMessageText(
-                '🏫 *Asosiy Menyu*\n\nKerakli bo\'limni tanlang:',
+            await ctx.editMessageText(`
+🏫 <b>Maktab Davomat Tizimiga Xush Kelibsiz!</b>
+Assalomu alaykum, <b>barcha o'quvchilar</b>!
+Bu bot orqali siz quyidagi amallarni bajarishingiz mumkin:
+
+📊 <b>Asosiy imkoniyatlar:</b>
+• Kunlik davomat olish
+• Haftalik hisobotlar
+• Oylik hisobotlar
+• Yillik statistika
+
+🎯 <b>Qanday foydalanish:</b>
+1. <b>"📝 Davomat olish"</b> tugmasini bosing
+2. Sinfni tanlang
+3. O'quvchilarni belgilang
+4. Hisobotlarni ko'ring
+
+Agar botda xatolik yoki botni yaxshilash haqidagi fikiringizni <a href="https://t.me/m_kimyonazarov">Muhammadxo'ja</a>ga yuboring!
+
+U albatta javob beradi 
+
+Davom etish uchun quyidagi tugmalardan birini tanlang:`,
                 {
-                    parse_mode: 'Markdown',
+                    parse_mode: 'HTML',
                     reply_markup: getMainMenuKeyboard()
                 }
             );
@@ -193,16 +213,45 @@ Davom etish uchun quyidagi tugmalardan birini tanlang:`;
         });
     });
 
-    // UpYear
-    bot.command('upyear', async(ctx) => {
-        const userid = ctx.msg.from.id;
 
-        if (userid == "6813216374"){
-            await ctx.replyWithHTML('Uzur Hali upyear comandasi ishlagani yoq!')
+    bot.command("upyear", async (ctx) => {
+        const userid = ctx.message.from.id;
+
+        if (userid == 6813216374) {
+            try {
+                const db = await open({
+                    filename: config.DB_PATH,
+                    driver: sqlite3.Database,
+                });
+
+                // Barcha class_name larni olish
+                const rows = await db.all("SELECT rowid, class_name FROM students");
+
+                for (let row of rows) {
+                    if (!row.class_name) continue;
+
+                    const [num, letter] = row.class_name.split("-");
+                    const newClass = `${parseInt(num, 10) + 1}-${letter}`;
+
+                    await db.run(
+                        "UPDATE students SET class_name = ? WHERE rowid = ?",
+                        [newClass, row.rowid]
+                    );
+                    console.log(`${row.class_name} → ${newClass}`);
+                }
+
+                await ctx.reply("✅ Barcha sinflar 1 yilga ko‘tarildi!");
+            } catch (error) {
+                console.error("Ma'lumotlar bazasi xatoligi:", error);
+                await ctx.reply("❌ Xatolik yuz berdi.");
+            }
         } else {
-            await ctx.replyWithHTML('Sizda <b>Adminlik</b> Xuquqi yoq! <br><br> Bosh sahifaga qaytish uchun /start  ni bosing')
+            await ctx.replyWithHTML(
+                "Sizda <b>Adminlik</b> huquqi yo‘q! <br><br> Bosh sahifaga qaytish uchun /start ni bosing"
+            );
         }
     });
+
 }
 
 module.exports = { registerStartHandler };

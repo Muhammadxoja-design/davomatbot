@@ -133,13 +133,20 @@ async function getClassesByGrade(gradeLevel) {
 // Darajalarni olish
 async function getGradeLevels() {
     const query = `
-        SELECT DISTINCT SUBSTR(class_name, 1, 1) as grade_level 
-        FROM students 
-        WHERE class_name IS NOT NULL 
+        SELECT DISTINCT CAST(
+            CASE
+                WHEN LENGTH(class_name) >= 2 AND substr(class_name, 2, 1) BETWEEN '0' AND '9'
+                THEN substr(class_name, 1, 2)
+                ELSE substr(class_name, 1, 1)
+            END AS INTEGER
+        ) as grade_level
+        FROM students
+        WHERE class_name IS NOT NULL
         ORDER BY grade_level
     `;
     return await db.all(query);
 }
+
 
 // O'quvchi ma'lumotlarini olish
 async function getStudentById(studentId) {

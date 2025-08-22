@@ -13,6 +13,9 @@ const {
     getHourSelectionKeyboard
 } = require('../keyboards/index');
 const { formatDate, getCurrentDate } = require('../utils/helpers');
+const fs = require("fs");
+const groups = JSON.parse(fs.readFileSync("classList.json", "utf8"));
+
 
 function registerAttendanceHandlers(bot) {
     // Davomat olishni boshlash
@@ -40,29 +43,29 @@ function registerAttendanceHandlers(bot) {
     });
     
     // Sinf darajasini tanlash
-    bot.action(/^grade_(\d+)$/, async (ctx) => {
-        try {
-            const gradeLevel = ctx.match[1];
-            const classes = await getClassesByGrade(gradeLevel);
-            
-            if (classes.length === 0) {
-                await ctx.answerCbQuery('❌ Bu darajada sinflar topilmadi');
-                return;
-            }
-            
-            await ctx.editMessageText(
-                `📚 *${gradeLevel}-sinf*\n\nQaysi bo'limni tanlaysiz?`,
-                {
-                    parse_mode: 'Markdown',
-                    reply_markup: getClassKeyboard(classes, gradeLevel)
-                }
-            );
-            
-        } catch (error) {
-            console.error('Grade selection xatoligi:', error);
-            await ctx.answerCbQuery('❌ Xatolik yuz berdi');
+bot.action(/^grade_(\d+)$/, async (ctx) => {
+    try {
+        const gradeLevel = ctx.match[1]; // Masalan: "10"
+        const classes = await getClassesByGrade(gradeLevel);
+
+        if (classes.length === 0) {
+            await ctx.answerCbQuery('❌ Bu darajada sinflar topilmadi');
+            return;
         }
-    });
+
+        const keyboard = getClassKeyboard(classes);
+
+        await ctx.editMessageText(
+            `📚 <b>${gradeLevel}-sinf</b>\n\nQaysi bo'limni tanlaysiz?`,
+            { parse_mode: 'HTML', reply_markup: keyboard }
+        );
+
+    } catch (error) {
+        console.error('Grade selection xatoligi:', error);
+        await ctx.answerCbQuery('❌ Xatolik yuz berdi');
+    }
+});
+
     
     // Sinfni tanlash
     bot.action(/^class_(.+)$/, async (ctx) => {
@@ -223,23 +226,24 @@ function registerAttendanceHandlers(bot) {
                 }
             }
             
-            const confirmMessage = `
-📝 *Davomat Tasdiqlash*
+const confirmMessage = `
+<b>📝 Davomat Tasdiqlash</b>
 
 🏫 Sinf: ${className}
 ⏰ Soat: ${hour}
 📅 Sana: ${formatDate(getCurrentDate())}
 
-👥 *Tanlangan o'quvchilar (${selectedStudents.length} ta):*
+👥 <b>Tanlangan o'quvchilar (${selectedStudents.length} ta):</b>
 ${studentNames.map((name, index) => `${index + 1}. ${name}`).join('\n')}
 
 Tasdiqlaysizmi?
-            `;
-            
-            await ctx.editMessageText(confirmMessage, {
-                parse_mode: 'Markdown',
-                reply_markup: getAttendanceConfirmKeyboard()
-            });
+`;
+
+await ctx.editMessageText(confirmMessage, {
+  parse_mode: 'HTML',
+  reply_markup: getAttendanceConfirmKeyboard()
+});
+
             
         } catch (error) {
             console.error('Hour selection xatoligi:', error);
@@ -247,67 +251,90 @@ Tasdiqlaysizmi?
         }
     });
     
-    // Davomatni saqlash
-    bot.action('save_attendance', async (ctx) => {
-        try {
-            ctx.session = ctx.session || {};
-            const selectedStudents = ctx.session.selectedStudents || [];
-            const hour = ctx.session.selectedHour;
-            const className = ctx.session.selectedClass;
-            const currentDate = getCurrentDate();
-            const userId = ctx.from.id;
-            
-            let savedCount = 0;
-            let errorCount = 0;
-            
-            for (const studentId of selectedStudents) {
-                try {
-                    await markAttendance(studentId, currentDate, hour, 'present', userId);
-                    savedCount++;
-                } catch (error) {
-                    console.error(`Student ${studentId} uchun davomat saqlashda xatolik:`, error);
-                    errorCount++;
-                }
-            }
-            
-            const resultMessage = `
-✅ *Davomat Saqlandi*
+// Davomatni saqlash
+bot.action('save_attendance', async (ctx) => {
+    try {
+        ctx.session = ctx.session || {};
+        const selectedStudents = ctx.session.selectedStudents || [];
+        const hour = ctx.session.selectedHour;
+        const className = ctx.session.selectedClass;
+        const currentDate = getCurrentDate();
+        const userId = ctx.from.id;
+        
+        let savedCount = 0;
+        let errorCount = 0;
 
-📊 *Natijalar:*
-• Muvaffaqiyatli: ${savedCount} ta
-• Xatolik: ${errorCount} ta
-• Jami: ${selectedStudents.length} ta
+        // Tanlangan o'quvchilarni "present" qilib saqlash
+        for (const studentId of selectedStudents) {
+            try {
+                await markAttendance(studentId, currentDate, hour, 'present', userId);
+                savedCount++;
+            } catch (error) {
+                console.error(`Student ${studentId} uchun davomat saqlashda xatolik:`, error);
+                errorCount++;
+            }
+        }
+
+        // Barcha o'quvchilarni olish
+        const allStudents = await getStudentsByClass(className);
+        const absentStudents = allStudents.filter(s => selectedStudents.includes(s.id));
+
+        // Kelmaganlarning ism familiyasi ro‘yxati
+        let absentList = "✅ Hamma kelgan!";
+        if (absentStudents.length > 0) {
+            absentList = absentStudents
+                .map((s, idx) => `${idx + 1}. ${s.first_name} ${s.last_name}`)
+                .join("\n");
+        }
+
+        // Natija xabari
+        const resultMessage = `
+✅ <b>Davomat Saqlandi</b>
+
+📊 <b>Natijalar:</b>
+• Kelmaganlar: ${savedCount} ta
+
+👥 <b>Kelmaganlar ro'yxati:</b>
+${absentList}
 
 🏫 Sinf: ${className}
 ⏰ Soat: ${hour}
 📅 Sana: ${formatDate(currentDate)}
 
 Rahmat! Davomat muvaffaqiyatli saqlandi.
+        `;
 
-Agar botda hatolik bo'lsa yoki botni yaxshilash xaqidagi fikiringizni [Muhammadxo'ja](https://t.me/m_kimyonazarov) ga yozing!
+        // Foydalanuvchiga chiqarish
+        await ctx.editMessageText(resultMessage, {
+            parse_mode: 'HTML',
+            reply_markup: {
+                inline_keyboard: [
+                    [{ text: '🏠 Asosiy menyu', callback_data: 'main_menu' }],
+                    [{ text: '📝 Yana davomat olish', callback_data: 'start_attendance' }]
+                ]
+            }
+        });
 
-U albatta javob berad 
-            `;
-            
-            await ctx.editMessageText(resultMessage, {
-                parse_mode: 'Markdown',
-                reply_markup: {
-                    inline_keyboard: [
-                        [{ text: '🏠 Asosiy menyu', callback_data: 'main_menu' }],
-                        [{ text: '📝 Yana davomat olish', callback_data: 'start_attendance' }]
-                    ]
-                }
-            });
-            
-            // Sessiyani tozalash
-            ctx.session = {};
-            
-        } catch (error) {
-            console.error('Save attendance xatoligi:', error);
-            await ctx.answerCbQuery('❌ Davomatni saqlashda xatolik');
+        // Agar guruh mavjud bo‘lsa — o‘sha guruhga ham yuborish
+        if (groups[className]) {
+            try {
+                await ctx.telegram.sendMessage(groups[className], resultMessage, {
+                    parse_mode: 'HTML'
+                });
+            } catch (err) {
+                console.error(`Davomatni guruhga yuborishda xatolik (${className}):`, err);
+            }
         }
-    });
-    
+
+        // Sessiyani tozalash
+        ctx.session = {};
+        
+    } catch (error) {
+        console.error('Save attendance xatoligi:', error);
+        await ctx.answerCbQuery('❌ Davomatni saqlashda xatolik');
+    }
+});
+
     // /davomat komandasi
     bot.command('davomat', async (ctx) => {
         await ctx.reply(

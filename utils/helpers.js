@@ -95,10 +95,8 @@ function formatAttendanceReport(attendance, type = 'daily') {
             }
             
             const presentCount = hourData.filter(r => r.status === 'present').length;
-            const absentCount = hourData.filter(r => r.status === 'absent').length;
             
-            report += `   ✅ Kelgan: ${presentCount} ta\n`;
-            report += `   ❌ Kelmagan: ${absentCount} ta\n`;
+            report += `   ❌ Kelmagan: ${presentCount} ta\n`;
             report += `   📊 Jami: ${hourData.length} ta\n\n`;
         }
     }

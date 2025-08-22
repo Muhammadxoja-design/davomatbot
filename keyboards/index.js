@@ -65,7 +65,7 @@ function getStudentKeyboard(students, selectedStudents = []) {
     students.forEach(student => {
         const isSelected = selectedStudents.includes(student.id);
         const studentName = `${student.first_name || ''} ${student.last_name || ''}`.trim();
-        const displayText = `${isSelected ? '✅' : '⭕'} ${student.class_count}. ${studentName}`;
+        const displayText = `${isSelected ? '⭕' :'✅' } ${student.class_count}. ${studentName}`;
         
         keyboard.push([{
             text: displayText,
