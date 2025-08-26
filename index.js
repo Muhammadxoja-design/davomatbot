@@ -51,27 +51,21 @@ async function initBot() {
 }
 
 app.get('/', (req, res) => res.send(`
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hello World</title>
-    <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100vw;
-            height: 100vh;
-            background-color: #252525;
-            color: #fff;
-        }
-    </style>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <h1>Assalomu alaykum</h1>
+<body class="flex flex-col items-center justify-center w-screen h-screen bg-gray-900 text-white">
+
+    <h1 class="text-4xl md:text-6xl font-bold text-center text-white drop-shadow-lg">
+        Assalomu alaykum
+    </h1>
+
 </body>
 </html>
     `));
