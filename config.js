@@ -19,6 +19,9 @@ module.exports = {
     // Vaqt zonasi
     TIMEZONE: 'Asia/Tashkent',
     
-    // Admin foydalanuvchilar
-    ADMIN_IDS: process.env.ADMIN_IDS ? process.env.ADMIN_IDS.split(',').map(id => parseInt(id)) : []
+    // Admin
+    ADMIN_IDS: process.env.ADMIN_IDS ? process.env.ADMIN_IDS.split(',').map(id => parseInt(id)) : [],
+    
+    // Foydalanuvchilar
+    USERS: process.env.USERS ? process.env.USERS.split(',').map(id =>  parseInt(id)) : []
 };
