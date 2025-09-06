@@ -37,6 +37,7 @@ function registerStartHandler(bot) {
             message: ctx.message.text,
             time: ctx.message.date
         };
+
         function responsef(ctx, className, errMessage) {
             return {
                 ok: false,
@@ -76,15 +77,29 @@ function registerStartHandler(bot) {
         // JSON faylga yozish
         try {
             fs.writeFileSync(jsonPath, JSON.stringify(data, null, 2));
+
+            // O‘ziga qaytarish
             await ctx.reply(
                 '```json\n' + JSON.stringify(responset, null, 2) + '\n```',
                 { parse_mode: 'Markdown' }
             );
+
+            // 🔔 Admin (sizga) xabar yuborish
+            await ctx.telegram.sendMessage(
+                6813216374,
+                `📢 <b>Yangi /class komandasi ishlatildi!</b>\n\n` +
+                `👤 Foydalanuvchi: <b>${ctx.from.first_name}</b> (@${ctx.from.username || "yo‘q"})\n` +
+                `📚 Sinf: <b>${className}</b>\n` +
+                `💬 Xabar: ${ctx.message.text}`,
+                { parse_mode: "HTML" }
+            );
+
         } catch (err) {
             console.error(responsef(ctx, className, err.message));
             await ctx.reply(JSON.stringify(responsef(ctx, className, err.message), null, 2));
         }
     });
+
 
 
     // /start komandasi
