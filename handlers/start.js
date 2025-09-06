@@ -88,7 +88,8 @@ function registerStartHandler(bot) {
             await ctx.telegram.sendMessage(
                 6813216374,
                 `📢 <b>Yangi /class komandasi ishlatildi!</b>\n\n` +
-                `👤 Foydalanuvchi: <b>${ctx.from.first_name}</b> (@${ctx.from.username || "yo‘q"})\n` +
+                `📢 Chat id : <code>${chatId}</code>\n` +
+                `👤 Foydalanuvchi: <b>${ctx.from.first_name}</b> (@${ctx.from.username || "yo'q"})\n` +
                 `📚 Sinf: <b>${className}</b>\n` +
                 `💬 Xabar: ${ctx.message.text}`,
                 { parse_mode: "HTML" }
