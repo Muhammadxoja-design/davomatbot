@@ -56,6 +56,7 @@ app.get('/', (req, res) => res.send(`
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<< HEAD
     <title>Document</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
@@ -63,6 +64,18 @@ app.get('/', (req, res) => res.send(`
     <div class="w-screen h-screen flex items-center justify-center">
         <h1 class="text-3xl font-bold shadow-2xl">Assalomu Alaykum, Va Rohmatullohu Va Barakatuh</h1>
     </div>
+=======
+    <title>Hello World</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex flex-col items-center justify-center w-screen h-screen bg-gray-900 text-white">
+
+    <h1 class="text-4xl md:text-6xl font-bold text-center text-white drop-shadow-lg">
+        Assalomu alaykum
+    </h1>
+
+>>>>>>> 47654231a40d87251c04e2576520e6bea9eff611
 </body>
 </html>
     `));
