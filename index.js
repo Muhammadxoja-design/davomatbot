@@ -51,27 +51,18 @@ async function initBot() {
 }
 
 app.get('/', (req, res) => res.send(`
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello World</title>
-    <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100vw;
-            height: 100vh;
-            background-color: #252525;
-            color: #fff;
-        }
-    </style>
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
-<body>
-    <h1>Assalomu alaykum</h1>
+<body data-theme="dark" class="bg-gray-900 text-white">
+    <div class="w-screen h-screen flex items-center justify-center">
+        <h1 class="text-3xl font-bold shadow-2xl">Assalomu Alaykum, Va Rohmatullohu Va Barakatuh</h1>
+    </div>
 </body>
 </html>
     `));

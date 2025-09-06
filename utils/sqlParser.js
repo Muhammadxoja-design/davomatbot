@@ -4,20 +4,20 @@ import { insertStudent } from '../database.js';
 export async function importStudentsFromSQL(filePath) {
   try {
     const sqlContent = fs.readFileSync(filePath, 'utf8');
-    
+
     // Extract INSERT VALUES from the SQL dump
     const insertPattern = /INSERT INTO `peoples` VALUES \((.*?)\);/gs;
     const matches = [...sqlContent.matchAll(insertPattern)];
-    
+
     let importCount = 0;
-    
+
     for (const match of matches) {
       const valuesString = match[1];
-      
+
       // Parse the VALUES clause - this is a simplified parser
       // In production, you might want to use a proper SQL parser
       const values = parseInsertValues(valuesString);
-      
+
       for (const studentValues of values) {
         try {
           const studentData = {
@@ -36,7 +36,7 @@ export async function importStudentsFromSQL(filePath) {
             clock: studentValues[12] === 'NULL' ? null : parseInt(studentValues[12]),
             password: studentValues[13]?.replace(/'/g, '') || null
           };
-          
+
           await insertStudent(studentData);
           importCount++;
         } catch (error) {
@@ -44,10 +44,10 @@ export async function importStudentsFromSQL(filePath) {
         }
       }
     }
-    
+
     console.log(`Successfully imported ${importCount} students`);
     return importCount;
-    
+
   } catch (error) {
     console.error('Error importing students from SQL:', error);
     throw error;
@@ -57,23 +57,23 @@ export async function importStudentsFromSQL(filePath) {
 function parseInsertValues(valuesString) {
   const values = [];
   const rows = valuesString.split('),(');
-  
+
   for (let i = 0; i < rows.length; i++) {
     let row = rows[i];
-    
+
     // Clean up the row
     if (i === 0) row = row.substring(1); // Remove leading (
     if (i === rows.length - 1) row = row.slice(0, -1); // Remove trailing )
-    
+
     // Split by comma, but be careful with quoted strings
     const rowValues = [];
     let current = '';
     let inQuotes = false;
     let quoteChar = '';
-    
+
     for (let j = 0; j < row.length; j++) {
       const char = row[j];
-      
+
       if ((char === "'" || char === '"') && !inQuotes) {
         inQuotes = true;
         quoteChar = char;
@@ -88,13 +88,13 @@ function parseInsertValues(valuesString) {
         current += char;
       }
     }
-    
+
     if (current.trim()) {
       rowValues.push(current.trim());
     }
-    
+
     values.push(rowValues);
   }
-  
+
   return values;
 }

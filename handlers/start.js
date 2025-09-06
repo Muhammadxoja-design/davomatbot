@@ -6,6 +6,7 @@ const { registerBotUser } = require('../database');
 const { getMainMenuKeyboard } = require('../keyboards/index');
 const fs = require('fs');
 const path = require('path');
+const { error } = require('console');
 const jsonPath = path.join(__dirname, '../classList.json');
 const CHANNEL_USERNAME = '@hayoti_tajribam';
 
@@ -17,7 +18,8 @@ function registerStartHandler(bot) {
         const className = ctx.match[1].trim(); // "1-A"
         const chatId = ctx.chat.id;
 
-        const response = {
+        const responset = {
+            ok: true,
             class: className,
             requested_by: {
                 id: ctx.from.id,
@@ -35,7 +37,28 @@ function registerStartHandler(bot) {
             message: ctx.message.text,
             time: ctx.message.date
         };
-
+        function responsef(ctx, className, errMessage) {
+            return {
+                ok: false,
+                class: className,
+                requested_by: {
+                    id: ctx.from.id,
+                    username: ctx.from.username || null,
+                    full_name: ctx.from.first_name || null,
+                    is_admin: ctx.from.id == 6813216374,
+                    language_code: ctx.from.language_code || "uz"
+                },
+                chat: {
+                    id: ctx.chat.id,
+                    title: ctx.chat.title || ctx.chat.first_name || "Private",
+                    type: ctx.chat.type
+                },
+                command: "/class",
+                message: ctx.message.text,
+                time: ctx.message.date,
+                error: errMessage
+            };
+        }
 
         // Avvalgi faylni o‘qish
         if (fs.existsSync(jsonPath)) {
@@ -43,7 +66,7 @@ function registerStartHandler(bot) {
                 const raw = fs.readFileSync(jsonPath, 'utf-8');
                 data = JSON.parse(raw);
             } catch (err) {
-                console.error('❌ JSON o‘qishda xato:', err.message);
+                console.error(responsef(ctx, className, err.message));
             }
         }
 
@@ -54,12 +77,12 @@ function registerStartHandler(bot) {
         try {
             fs.writeFileSync(jsonPath, JSON.stringify(data, null, 2));
             await ctx.reply(
-                '```json\n' + JSON.stringify(response, null, 2) + '\n```',
+                '```json\n' + JSON.stringify(responset, null, 2) + '\n```',
                 { parse_mode: 'Markdown' }
             );
         } catch (err) {
-            console.error('❌ JSON yozishda xato:', err.message);
-            await ctx.reply('❌ Saqlashda xatolik yuz berdi.');
+            console.error(responsef(ctx, className, err.message));
+            await ctx.reply(JSON.stringify(responsef(ctx, className, err.message), null, 2));
         }
     });
 

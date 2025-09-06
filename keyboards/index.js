@@ -16,86 +16,86 @@ function getMainMenuKeyboard() {
 // Sinf darajasi klaviaturasi
 function getGradeLevelKeyboard(gradeLevels, reportType = null) {
     const keyboard = [];
-    
+
     gradeLevels.forEach(grade => {
-        const callbackData = reportType ? 
-            `report_grade_${grade.grade_level}_${reportType}` : 
+        const callbackData = reportType ?
+            `report_grade_${grade.grade_level}_${reportType}` :
             `grade_${grade.grade_level}`;
-        
+
         keyboard.push([{
             text: `${grade.grade_level}-sinflar`,
             callback_data: callbackData
         }]);
     });
-    
+
     keyboard.push([{ text: '🔙 Orqaga', callback_data: 'main_menu' }]);
-    
+
     return { inline_keyboard: keyboard };
 }
 
 // Sinflar klaviaturasi
 function getClassKeyboard(classes, gradeLevel, reportType = null) {
     const keyboard = [];
-    
+
     classes.forEach(cls => {
-        const callbackData = reportType ? 
-            `report_class_${cls.class_name}_${reportType}` : 
+        const callbackData = reportType ?
+            `report_class_${cls.class_name}_${reportType}` :
             `class_${cls.class_name}`;
-        
+
         keyboard.push([{
             text: cls.class_name,
             callback_data: callbackData
         }]);
     });
-    
-    const backCallback = reportType ? 
-        `report_grade_${gradeLevel}_${reportType}` : 
+
+    const backCallback = reportType ?
+        `report_grade_${gradeLevel}_${reportType}` :
         `grade_${gradeLevel}`;
-    
+
     keyboard.push([{ text: '🔙 Orqaga', callback_data: backCallback }]);
-    
+
     return { inline_keyboard: keyboard };
 }
 
 // O'quvchilar klaviaturasi
 function getStudentKeyboard(students, selectedStudents = []) {
     const keyboard = [];
-    
+
     // O'quvchilarni 1 tadan qator qilib joylashtirish (ko'proq ma'lumot ko'rish uchun)
     students.forEach(student => {
         const isSelected = selectedStudents.includes(student.id);
         const studentName = `${student.first_name || ''} ${student.last_name || ''}`.trim();
-        const displayText = `${isSelected ? '⭕' :'✅' } ${student.class_count}. ${studentName}`;
-        
+        const displayText = `${isSelected ? '⭕' : '✅'} ${student.class_count}. ${studentName}`;
+
         keyboard.push([{
             text: displayText,
             callback_data: `student_${student.id}`
         }]);
     });
-    
+
     // Boshqaruv tugmalari
     const controlRow = [];
-    
+
     // Barchasini tanlash tugmasi
     controlRow.push({ text: '✅ Barchasini tanlash', callback_data: 'select_all_students' });
     controlRow.push({ text: '❌ Barchasini bekor qilish', callback_data: 'deselect_all_students' });
     keyboard.push(controlRow);
-    
+
     const actionRow = [];
     if (selectedStudents.length > 0) {
         actionRow.push({ text: `✅ Tasdiqlash (${selectedStudents.length})`, callback_data: 'confirm_attendance' });
     }
-    
+
     actionRow.push({ text: '🔙 Orqaga', callback_data: 'attendance' });
     keyboard.push(actionRow);
-    
+
     return { inline_keyboard: keyboard };
 }
 
 // Soat tanlash klaviaturasi
 function getHourSelectionKeyboard() {
     const keyboard = [];
-    
+
     // 6 soatni 3x2 formatda joylashtirish
     for (let i = 1; i <= 6; i += 3) {
         const row = [];
@@ -107,9 +107,9 @@ function getHourSelectionKeyboard() {
         }
         keyboard.push(row);
     }
-    
+
     keyboard.push([{ text: '🔙 Orqaga', callback_data: 'confirm_attendance' }]);
-    
+
     return { inline_keyboard: keyboard };
 }
 
@@ -149,9 +149,9 @@ function getMonthKeyboard(year) {
         'Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun',
         'Iyul', 'Avgust', 'Sentabr', 'Oktabr', 'Noyabr', 'Dekabr'
     ];
-    
+
     const keyboard = [];
-    
+
     // Oylarni 3x4 formatda joylashtirish
     for (let i = 0; i < 12; i += 3) {
         const row = [];
@@ -163,9 +163,9 @@ function getMonthKeyboard(year) {
         }
         keyboard.push(row);
     }
-    
+
     keyboard.push([{ text: '🔙 Orqaga', callback_data: 'monthly_report' }]);
-    
+
     return { inline_keyboard: keyboard };
 }
 
@@ -173,7 +173,7 @@ function getMonthKeyboard(year) {
 function getYearKeyboard() {
     const currentYear = new Date().getFullYear();
     const keyboard = [];
-    
+
     // Joriy yil va oldingi 2 yil
     for (let year = currentYear; year >= currentYear - 2; year--) {
         keyboard.push([{
@@ -181,9 +181,9 @@ function getYearKeyboard() {
             callback_data: `year_${year}`
         }]);
     }
-    
+
     keyboard.push([{ text: '🔙 Orqaga', callback_data: 'monthly_report' }]);
-    
+
     return { inline_keyboard: keyboard };
 }
 

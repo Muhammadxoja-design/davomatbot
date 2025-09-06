@@ -68,7 +68,7 @@ export function formatDateUzbek(dateString) {
     'yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun',
     'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr'
   ];
-  
+
   return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
 }
 
