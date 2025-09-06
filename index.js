@@ -7,8 +7,21 @@ const { registerReportHandlers } = require('./handlers/reports');
 const axios = require("axios");
 const express = require('express');
 const app = express();
+const path = require('path');
+const fs = require('fs').promises;
 
 const bot = new Telegraf(config.BOT_TOKEN);
+async function loadClassData() {
+    const filePath = path.join(__dirname, './classList.json');
+    const data = await fs.readFile(filePath, 'utf-8');
+    return JSON.parse(data);
+}
+
+let class_me;
+
+loadClassData().then(data => {
+    class_me = data;
+});
 
 
 bot.use(session());
@@ -22,11 +35,11 @@ async function initBot() {
     try {
         await initDatabase();
         console.log('✅ Ma\'lumotlar bazasi tayyor');
-        
+
         registerStartHandler(bot);
         registerAttendanceHandlers(bot);
         registerReportHandlers(bot);
-        
+
         if (config.USE_WEBHOOK) {
             bot.launch({
                 webhook: {
@@ -38,12 +51,12 @@ async function initBot() {
         } else {
             bot.launch();
         }
-        
+
         console.log('🤖 Bot ishga tushdi');
-        
+
         process.once('SIGINT', () => bot.stop('SIGINT'));
         process.once('SIGTERM', () => bot.stop('SIGTERM'));
-        
+
     } catch (error) {
         console.error('Bot ishga tushishda xatolik:', error);
         process.exit(1);
@@ -66,13 +79,13 @@ app.get('/', (req, res) => res.send(`
     </h1>
 </body>
 </html>
-    `));
+`));
 
+app.get("/api/class", (req, res) => res.send(class_me))
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🌐 Web server ${PORT}-portda ishlayapti`);
+    console.log(`🌐 Web server ${PORT}-portda ishlayapti`);
 });
-
 initBot();
 
 module.exports = bot;
