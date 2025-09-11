@@ -81,7 +81,16 @@ app.get('/', (req, res) => res.send(`
 </html>
 `));
 
-app.get("/api/class", (req, res) => res.send(class_me))
+app.get("/api/class", async (req, res) => {
+    try {
+        const filePath = path.join(__dirname, './classList.json');
+        const data = await fs.readFile(filePath, 'utf-8');
+        res.json(JSON.parse(data));
+    } catch (err) {
+        res.status(500).json({ error: "Faylni o‘qishda xato", details: err.message });
+    }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`🌐 Web server ${PORT}-portda ishlayapti`);

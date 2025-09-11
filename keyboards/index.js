@@ -82,7 +82,7 @@ function getStudentKeyboard(students, selectedStudents = []) {
     keyboard.push(controlRow);
 
     const actionRow = [];
-    if (selectedStudents.length > 0) {
+    if (true) {
         actionRow.push({ text: `✅ Tasdiqlash (${selectedStudents.length})`, callback_data: 'confirm_attendance' });
     }
 
