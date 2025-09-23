@@ -96,7 +96,6 @@ function getStudentKeyboard(students, selectedStudents = []) {
 function getHourSelectionKeyboard() {
     const keyboard = [];
 
-    // 6 soatni 3x2 formatda joylashtirish
     for (let i = 1; i <= 6; i += 3) {
         const row = [];
         for (let j = i; j < Math.min(i + 3, 7); j++) {
@@ -107,6 +106,15 @@ function getHourSelectionKeyboard() {
         }
         keyboard.push(row);
     }
+    
+    // 🔹 Oxiriga "Butun kun" tugmasini qo‘shamiz
+    keyboard.push([
+        {
+            text: "🕒 Butun kun",
+            callback_data: "hour_all"
+        }
+    ]);
+    
 
     keyboard.push([{ text: '🔙 Orqaga', callback_data: 'confirm_attendance' }]);
 
