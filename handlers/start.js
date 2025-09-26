@@ -15,7 +15,7 @@ function registerStartHandler(bot) {
     let data = {};
 
     bot.hears(/^\/class (.+)$/i, async (ctx) => {
-        const className = ctx.match[1].trim(); // "1-A"
+        const className = ctx.match[1].trim();
         const chatId = ctx.chat.id;
 
         const responset = {
@@ -25,7 +25,9 @@ function registerStartHandler(bot) {
                 id: ctx.from.id,
                 username: ctx.from.username || null,
                 full_name: ctx.from.first_name || null,
-                is_admin: ctx.from.id == 6813216374 ? true : false,
+                is_admin: Array.isArray(config.ADMIN_IDS)
+                    ? config.ADMIN_IDS.includes(ctx.from.id)
+                    : ctx.from.id == config.ADMIN_IDS,
                 language_code: ctx.from.language_code || "uz"
             },
             chat: {
@@ -38,53 +40,48 @@ function registerStartHandler(bot) {
             time: ctx.message.date
         };
 
-        function responsef(ctx, className, errMessage) {
+        function responsef(errMessage) {
             return {
+                ...responset,
                 ok: false,
-                class: className,
-                requested_by: {
-                    id: ctx.from.id,
-                    username: ctx.from.username || null,
-                    full_name: ctx.from.first_name || null,
-                    is_admin: ctx.from.id == 6813216374,
-                    language_code: ctx.from.language_code || "uz"
-                },
-                chat: {
-                    id: ctx.chat.id,
-                    title: ctx.chat.title || ctx.chat.first_name || "Private",
-                    type: ctx.chat.type
-                },
-                command: "/class",
-                message: ctx.message.text,
-                time: ctx.message.date,
                 error: errMessage
             };
         }
 
-        // Avvalgi faylni o‘qish
+        // Avvalgi faylni o'qish
         if (fs.existsSync(jsonPath)) {
             try {
-                const raw = fs.readFileSync(jsonPath, 'utf-8');
+                const raw = fs.readFileSync(jsonPath, "utf-8");
                 data = JSON.parse(raw);
             } catch (err) {
-                console.error(responsef(ctx, className, err.message));
+                console.error(responsef(err.message));
             }
+        }
+
+        // Faqat admin yozishi uchun shart
+        const isAdmin = Array.isArray(config.ADMIN_IDS)
+            ? config.ADMIN_IDS.includes(ctx.from.id)
+            : ctx.from.id == config.ADMIN_IDS;
+
+        if (!isAdmin) {
+            const resp = responsef("❌ Sizda bu amalni bajarishga ruxsat yo'q!");
+            return ctx.reply("```json\n" + JSON.stringify(resp, null, 2) + "\n```", {
+                parse_mode: "Markdown"
+            });
         }
 
         // Ma'lumotni yangilash
         data[className] = chatId;
 
-        // JSON faylga yozish
+        // JSON faylga yozish va javob qaytarish
         try {
             fs.writeFileSync(jsonPath, JSON.stringify(data, null, 2));
 
-            // O‘ziga qaytarish
             await ctx.reply(
-                '```json\n' + JSON.stringify(responset, null, 2) + '\n```',
-                { parse_mode: 'Markdown' }
+                "```json\n" + JSON.stringify(responset, null, 2) + "\n```",
+                { parse_mode: "Markdown" }
             );
 
-            // 🔔 Admin (sizga) xabar yuborish
             await ctx.telegram.sendMessage(
                 6813216374,
                 `📢 <b>Yangi /class komandasi ishlatildi!</b>\n\n` +
@@ -96,10 +93,15 @@ function registerStartHandler(bot) {
             );
 
         } catch (err) {
-            console.error(responsef(ctx, className, err.message));
-            await ctx.reply(JSON.stringify(responsef(ctx, className, err.message), null, 2));
+            const resp = responsef(err.message);
+            console.error(resp);
+            await ctx.reply(
+                "```json\n" + JSON.stringify(resp, null, 2) + "\n```",
+                { parse_mode: "Markdown" }
+            );
         }
     });
+
 
 
 
@@ -152,38 +154,50 @@ Davom etish uchun quyidagi tugmalardan birini tanlang:`;
     // Asosiy menyu tugmalari
     bot.action('main_menu', async (ctx) => {
         try {
-            await ctx.editMessageText(`
-🏫 <b>Maktab Davomat Tizimiga Xush Kelibsiz!</b>
-Assalomu alaykum, <b>barcha o'quvchilar</b>!
-Bu bot orqali siz quyidagi amallarni bajarishingiz mumkin:
-
-📊 <b>Asosiy imkoniyatlar:</b>
-• Kunlik davomat olish
-• Haftalik hisobotlar
-• Oylik hisobotlar
-• Yillik statistika
-
-🎯 <b>Qanday foydalanish:</b>
-1. <b>"📝 Davomat olish"</b> tugmasini bosing
-2. Sinfni tanlang
-3. O'quvchilarni belgilang
-4. Hisobotlarni ko'ring
-
-Agar botda xatolik yoki botni yaxshilash haqidagi fikiringizni <a href="https://t.me/m_kimyonazarov">Muhammadxo'ja</a>ga yuboring!
-
-U albatta javob beradi 
-
-Davom etish uchun quyidagi tugmalardan birini tanlang:`,
-                {
-                    parse_mode: 'HTML',
-                    reply_markup: getMainMenuKeyboard()
-                }
-            );
+            const caption = `
+    🏫 <b>Maktab Davomat Tizimiga Xush Kelibsiz!</b>
+    Assalomu alaykum, <b>barcha o'quvchilar</b>!
+    Bu bot orqali siz quyidagi amallarni bajarishingiz mumkin:
+    
+    📊 <b>Asosiy imkoniyatlar:</b>
+    • Kunlik davomat olish
+    • Haftalik hisobotlar
+    • Oylik hisobotlar
+    • Yillik statistika
+    
+    🎯 <b>Qanday foydalanish:</b>
+    1. <b>"📝 Davomat olish"</b> tugmasini bosing
+    2. Sinfni tanlang
+    3. O'quvchilarni belgilang
+    4. Hisobotlarni ko'ring
+    
+    Agar botda xatolik yoki botni yaxshilash haqidagi fikiringizni <a href="https://t.me/m_kimyonazarov">Muhammadxo'ja</a>ga yuboring!
+    
+    U albatta javob beradi 
+    
+    Davom etish uchun quyidagi tugmalardan birini tanlang:`;
+    
+            // Eski xabarni o'chirib tashlash (rasmni yo'qotish uchun)
+            try {
+                await ctx.deleteMessage();
+            } catch (e) {
+                console.warn("Xabarni o'chirib bo'lmadi:", e.description);
+            }
+    
+            // Faqat matn yuborish
+            await ctx.reply(caption, {
+                parse_mode: 'HTML',
+                reply_markup: getMainMenuKeyboard()
+            });
+    
+            await ctx.answerCbQuery();
+    
         } catch (error) {
             console.error('Main menu xatoligi:', error);
-            await ctx.answerCbQuery('❌ Xatolik yuz berdi');
+            try { await ctx.answerCbQuery('❌ Xatolik yuz berdi'); } catch (e) {}
         }
     });
+    
 
     // Yordam komandasi
     bot.command('help', async (ctx) => {
@@ -252,6 +266,9 @@ Davom etish uchun quyidagi tugmalardan birini tanlang:`,
         });
     });
 
+    bot.action('complaint', async (ctx) => {
+        const message2 = ``;
+    });
 
     bot.command("upyear", async (ctx) => {
         const userid = ctx.message.from.id;
@@ -279,14 +296,14 @@ Davom etish uchun quyidagi tugmalardan birini tanlang:`,
                     console.log(`${row.class_name} → ${newClass}`);
                 }
 
-                await ctx.reply("✅ Barcha sinflar 1 yilga ko‘tarildi!");
+                await ctx.reply("✅ Barcha sinflar 1 yilga ko'tarildi!");
             } catch (error) {
                 console.error("Ma'lumotlar bazasi xatoligi:", error);
                 await ctx.reply("❌ Xatolik yuz berdi.");
             }
         } else {
             await ctx.replyWithHTML(
-                "Sizda <b>Adminlik</b> huquqi yo‘q! <br><br> Bosh sahifaga qaytish uchun /start ni bosing"
+                "Sizda <b>Adminlik</b> huquqi yo'q! <br><br> Bosh sahifaga qaytish uchun /start ni bosing"
             );
         }
     });

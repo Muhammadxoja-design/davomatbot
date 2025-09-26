@@ -1,4 +1,4 @@
-const Markup = require("telegraf");
+const { Markup } = require("telegraf");
 const fetch = require("node-fetch");
 const path = require("path");
 const fs = require("fs");
@@ -315,7 +315,7 @@ function registerAttendanceHandlers(bot) {
 
       await ctx.reply(`✅ Davomat saqlandi. Jami: ${savedCount} ta yozuv.`);
 
-      // Izoh so‘raymiz
+      // Izoh so'raymiz
       await ctx.reply("✍️ Davomat uchun izoh yozing (yoki /skip ni yuboring):");
       ctx.session.awaitingComment = true;
     } catch (error) {
@@ -340,10 +340,10 @@ function registerAttendanceHandlers(bot) {
         }
       } else {
         console.warn(
-          `⚠️ ${className} uchun chat_id topilmadi (classList.json ga qo‘shilmagan).`
+          `⚠️ ${className} uchun chat_id topilmadi (classList.json ga qo'shilmagan).`
         );
         await ctx.reply(
-          `⚠️ \"${className}\" sinfi uchun guruh belgilanmagan. Admin qo‘shishi kerak.`
+          `⚠️ \"${className}\" sinfi uchun guruh belgilanmagan. Admin qo'shishi kerak.`
         );
       }
     } catch (error) {
@@ -377,7 +377,7 @@ function registerAttendanceHandlers(bot) {
         currentDate
       )}\n${
         comment ? "📝 Izoh: " + comment : ""
-      }\n\n👥 Barcha o‘quvchilar darsda ishtirok etdi ✅\n\n<b>Davomat <a href="https://t.me/${
+      }\n\n👥 Barcha o'quvchilar darsda ishtirok etdi ✅\n\n<b>Davomat <a href="https://t.me/${
         ctx.from.username
       }">${ctx.from.first_name}</a> tomonidan olindi.</b>`;
     } else {
@@ -385,7 +385,7 @@ function registerAttendanceHandlers(bot) {
         currentDate
       )}\n${
         comment ? "📝 Izoh: " + comment : ""
-      }\n\n👥 <b>Darsga qatnashmagan o‘quvchilar (${
+      }\n\n👥 <b>Darsga qatnashmagan o'quvchilar (${
         selectedStudents.length
       } ta):</b>\n${studentNames
         .map((n, i) => `${i + 1}. ${n}`)
@@ -412,9 +412,9 @@ await ctx.sendPhoto(
   {
     caption: resultMessage,
     parse_mode: "HTML",
-    // reply_markup: Markup.inlineKeyboard([
-    //   [Markup.button.callback("🏠 Bosh sahifaga qaytish", "main_menu").callback]
-    // ])
+    reply_markup: Markup.inlineKeyboard([
+      [Markup.button.callback("🏠 Bosh sahifaga qaytish", "main_menu").callback]
+    ])
   }
 );
 
@@ -428,7 +428,7 @@ await ctx.sendPhoto(
       await ctx.sendMessage(ctx.from.id, resultMessage, {
         parse_mode: "HTML",
         ...Markup.inlineKeyboard([
-          [Markup.button.callback("🏠 Bosh sahifaga qaytish", "go_home")],
+          [Markup.button.callback("🏠 Bosh sahifaga qaytish", "main_menu")],
         ]),
       });
     }
@@ -436,7 +436,7 @@ await ctx.sendPhoto(
     // Sinf guruhiga yuborish
     await sendToClassGroup(ctx, className, resultMessage);
 
-    // Faylni o‘chirish (ixtiyoriy)
+    // Faylni o'chirish (ixtiyoriy)
     try {
       if (ctx.session.photoPath && fs.existsSync(ctx.session.photoPath)) {
         // fs.unlinkSync(ctx.session.photoPath);
