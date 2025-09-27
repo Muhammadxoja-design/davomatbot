@@ -412,7 +412,7 @@ await ctx.sendPhoto(
   {
     caption: resultMessage,
     parse_mode: "HTML"
-    ])
+    )
   }
 );
 
