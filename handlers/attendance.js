@@ -54,29 +54,26 @@ function registerAttendanceHandlers(bot) {
 
   // Sinf darajasini tanlash
   bot.action(/^grade_(\d+)$/, async (ctx) => {
-  try {
-    const gradeLevel = ctx.match[1]; // Masalan: "10"
-    const classes = await getClassesByGrade(gradeLevel);
+    try {
+      const gradeLevel = ctx.match[1]; // Masalan: "10"
+      const classes = await getClassesByGrade(gradeLevel);
 
-    if (!classes || classes.length === 0) {
-      await ctx.answerCbQuery("❌ Bu darajada sinflar topilmadi");
-      return;
+      if (!classes || classes.length === 0) {
+        await ctx.answerCbQuery("❌ Bu darajada sinflar topilmadi");
+        return;
+      }
+
+      const keyboard = getClassKeyboard(classes, gradeLevel);
+
+      await ctx.editMessageText(
+        `📚 <b>${gradeLevel}-sinf</b>\n\nQaysi bo'limni tanlaysiz?`,
+        { parse_mode: "HTML", reply_markup: keyboard }
+      );
+    } catch (error) {
+      console.error("Grade selection xatoligi:", error);
+      await ctx.answerCbQuery("❌ Xatolik yuz berdi");
     }
-
-    // ❌ sizda faqat classes bor edi
-    // ✅ gradeLevel ham yuboramiz
-    const keyboard = getClassKeyboard(classes, gradeLevel);
-
-    await ctx.editMessageText(
-      `📚 <b>${gradeLevel}-sinf</b>\n\nQaysi bo'limni tanlaysiz?`,
-      { parse_mode: "HTML", reply_markup: keyboard }
-    );
-  } catch (error) {
-    console.error("Grade selection xatoligi:", error);
-    await ctx.answerCbQuery("❌ Xatolik yuz berdi");
-  }
-});
-
+  });
 
   // Sinfni tanlash
   bot.action(/^class_(.+)$/, async (ctx) => {
@@ -152,8 +149,8 @@ function registerAttendanceHandlers(bot) {
   bot.action("select_all_students", async (ctx) => {
     try {
       ctx.session = ctx.session || {};
-      const students = await getStudentsByClass(ctx.session.selectedClass);
-      ctx.session.selectedStudents = students.map((student) => student.id);
+      const students = await getStudentsByClass(ctx.session.selectedClass || "");
+      ctx.session.selectedStudents = (students || []).map((student) => student.id);
 
       await ctx.editMessageText(
         `👥 *${ctx.session.selectedClass} sinfi*\n\nO'quvchilarni tanlang:\n\n` +
@@ -179,7 +176,7 @@ function registerAttendanceHandlers(bot) {
   bot.action("deselect_all_students", async (ctx) => {
     try {
       ctx.session = ctx.session || {};
-      const students = await getStudentsByClass(ctx.session.selectedClass);
+      const students = await getStudentsByClass(ctx.session.selectedClass || "");
       ctx.session.selectedStudents = [];
 
       await ctx.editMessageText(
@@ -228,7 +225,7 @@ function registerAttendanceHandlers(bot) {
       ctx.session.selectedHour = hour;
 
       const selectedStudents = ctx.session.selectedStudents || [];
-      const className = ctx.session.selectedClass;
+      const className = ctx.session.selectedClass || "";
 
       let studentNames = [];
       for (const studentId of selectedStudents) {
@@ -240,9 +237,7 @@ function registerAttendanceHandlers(bot) {
 
       const confirmMessage = `\n<b>📝 Davomat Tasdiqlash</b>\n\n🏫 Sinf: ${className}\n⏰ Soat: ${hour}\n📅 Sana: ${formatDate(
         getCurrentDate()
-      )}\n\n👥 <b>Drsga Kirmagan o'quvchilar (${
-        selectedStudents.length
-      } ta):</b>\n${studentNames
+      )}\n\n👥 <b>Darsga Kirmagan o'quvchilar (${selectedStudents.length} ta):</b>\n${studentNames
         .map((name, index) => `${index + 1}. ${name}`)
         .join("\n")}\n\nTasdiqlaysizmi?\n`;
 
@@ -262,7 +257,7 @@ function registerAttendanceHandlers(bot) {
       ctx.session.selectedHour = "Butun kun";
 
       const selectedStudents = ctx.session.selectedStudents || [];
-      const className = ctx.session.selectedClass;
+      const className = ctx.session.selectedClass || "";
 
       let studentNames = [];
       for (const studentId of selectedStudents) {
@@ -274,9 +269,7 @@ function registerAttendanceHandlers(bot) {
 
       const confirmMessage = `\n<b>📝 Davomat Tasdiqlash</b>\n\n🏫 Sinf: ${className}\n⏰ Soat: Butun kun\n📅 Sana: ${formatDate(
         getCurrentDate()
-      )}\n\n👥 <b>Darsga kirmagan o'quvchilar (${
-        selectedStudents.length
-      } ta):</b>\n${studentNames
+      )}\n\n👥 <b>Darsga kirmagan o'quvchilar (${selectedStudents.length} ta):</b>\n${studentNames
         .map((name, index) => `${index + 1}. ${name}`)
         .join("\n")}\n\nTasdiqlaysizmi?\n`;
 
@@ -289,15 +282,16 @@ function registerAttendanceHandlers(bot) {
       await ctx.answerCbQuery("❌ Xatolik yuz berdi");
     }
   });
+
   // Davomatni saqlash
   bot.action("save_attendance", async (ctx) => {
     try {
       ctx.session = ctx.session || {};
       const selectedStudents = ctx.session.selectedStudents || [];
       const hour = ctx.session.selectedHour;
-      const className = ctx.session.selectedClass;
+      const className = ctx.session.selectedClass || "";
       const currentDate = getCurrentDate();
-      const userId = ctx.from.id;
+      const userId = ctx.from && ctx.from.id;
 
       let savedCount = 0;
 
@@ -357,8 +351,8 @@ function registerAttendanceHandlers(bot) {
 
   async function sendFinalReport(ctx) {
     ctx.session = ctx.session || {};
-    const className = ctx.session.selectedClass;
-    const hour = ctx.session.selectedHour;
+    const className = ctx.session.selectedClass || "";
+    const hour = ctx.session.selectedHour || "";
     const currentDate = getCurrentDate();
     const comment = ctx.session.comment || null;
     const selectedStudents = ctx.session.selectedStudents || [];
@@ -375,58 +369,52 @@ function registerAttendanceHandlers(bot) {
     if (selectedStudents.length === 0) {
       resultMessage = `\n✅ <b>Davomat saqlandi</b>\n\n🏫 Sinf: ${className}\n⏰ Soat: ${hour}\n📅 Sana: ${formatDate(
         currentDate
-      )}\n${
-        comment ? "📝 Izoh: " + comment : ""
-      }\n\n👥 Barcha o'quvchilar darsda ishtirok etdi ✅\n\n<b>Davomat <a href="https://t.me/${
-        ctx.from.username
-      }">${ctx.from.first_name}</a> tomonidan olindi.</b>`;
+      )}\n${comment ? "📝 Izoh: " + comment + "\n" : ""}\n\n👥 Barcha o'quvchilar darsda ishtirok etdi ✅\n\n<b>Davomat <a href="https://t.me/${ctx.from.username}">${ctx.from.first_name}</a> tomonidan olindi.</b>`;
     } else {
       resultMessage = `\n✅ <b>Davomat saqlandi</b>\n\n🏫 Sinf: ${className}\n⏰ Soat: ${hour}\n📅 Sana: ${formatDate(
         currentDate
-      )}\n${
-        comment ? "📝 Izoh: " + comment : ""
-      }\n\n👥 <b>Darsga qatnashmagan o'quvchilar (${
-        selectedStudents.length
-      } ta):</b>\n${studentNames
+      )}\n${comment ? "📝 Izoh: " + comment + "\n" : ""}\n\n👥 <b>Darsga qatnashmagan o'quvchilar (${selectedStudents.length} ta):</b>\n${studentNames
         .map((n, i) => `${i + 1}. ${n}`)
-        .join("\n")}\n\n<b>Davomat <a href="https://t.me/${
-        ctx.from.username
-      }">${
-        ctx.from.first_name
-      }</a> tomonidan olindi.</b>\n\n⚠️ Ushbu o'quvchilar faqat ${hour}-soat darsiga kelishmadi! ⚠️`;
+        .join("\n")}\n\n<b>Davomat <a href="https://t.me/${ctx.from.username}">${ctx.from.first_name}</a> tomonidan olindi.</b>\n\n⚠️ Ushbu o'quvchilar faqat ${hour}-soat darsiga kelishmadi! ⚠️`;
     }
 
     // Har doim umumiy guruhga yuborish
+    try {
+      if (ctx.session.photoPath) {
+        // Guruhga rasm yuboriladi
+        if (groups["all"]) {
+          await ctx.telegram.sendPhoto(
+            groups["all"],
+            { source: ctx.session.photoPath },
+            { caption: resultMessage, parse_mode: "HTML" }
+          );
+        }
 
-    if (ctx.session.photoPath) {
-      // Guruhga rasm yuboriladi
-      await ctx.telegram.sendPhoto(
-        groups["all"],
-        { source: ctx.session.photoPath },
-        { caption: resultMessage, parse_mode: "HTML" }
-      );
+        // Foydalanuvchiga rasm + caption yuboriladi
+        if (ctx.from && ctx.from.id) {
+          await ctx.telegram.sendPhoto(
+            ctx.from.id,
+            { source: ctx.session.photoPath },
+            { caption: resultMessage, parse_mode: "HTML" }
+          );
+        }
+      } else {
+        // Guruhga xabar yuboriladi
+        if (groups["all"]) {
+          await ctx.telegram.sendMessage(groups["all"], resultMessage, {
+            parse_mode: "HTML",
+          });
+        }
 
-      // Foydalanuvchiga rasm + tugma yuboriladi
-await ctx.sendPhoto(
-  { source: ctx.session.photoPath },
-  {
-    caption: resultMessage,
-    parse_mode: "HTML"
-    )
-  }
-);
-
-    } else {
-      // Guruhga xabar yuboriladi
-      await ctx.telegram.sendMessage(groups["all"], resultMessage, {
-        parse_mode: "HTML",
-      });
-
-      // Foydalanuvchiga xabar + tugma yuboriladi
-      await ctx.sendMessage(ctx.from.id, resultMessage, {
-        parse_mode: "HTML"
-        ]),
-      });
+        // Foydalanuvchiga xabar yuboriladi
+        if (ctx.from && ctx.from.id) {
+          await ctx.telegram.sendMessage(ctx.from.id, resultMessage, {
+            parse_mode: "HTML",
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Final report yuborishda xatolik:", err);
     }
 
     // Sinf guruhiga yuborish
@@ -485,12 +473,12 @@ await ctx.sendPhoto(
     }
   });
 
-  // Agar foydalanuvchi rasm tashlamay o'tkazsa
+  // Agar foydalanuvchi rasm tashlamay o'tkazsa (skip komandasi)
   bot.command("skip", async (ctx) => {
-    if (ctx.session?.student) {
-      const { grade, className, student } = ctx.session;
-      await sendFinalReport(ctx, grade, className, student, "Yo'q", null);
-      ctx.session = {};
+    // Agar izohni o'tkazsangiz va hech qanday rasm bo'lmasa, shunchaki hisobot yuborsin
+    if (ctx.session) {
+      // Agar rasm kutilsa lekin yo'q bo'lsa, to'g'ridan-to'g'ri yuborish
+      await sendFinalReport(ctx);
     }
   });
 
