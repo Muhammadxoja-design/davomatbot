@@ -411,9 +411,7 @@ await ctx.sendPhoto(
   { source: ctx.session.photoPath },
   {
     caption: resultMessage,
-    parse_mode: "HTML",
-    reply_markup: Markup.inlineKeyboard([
-      [Markup.button.callback("🏠 Bosh sahifaga qaytish", "main_menu").callback]
+    parse_mode: "HTML"
     ])
   }
 );
