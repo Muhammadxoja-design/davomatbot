@@ -424,9 +424,7 @@ await ctx.sendPhoto(
 
       // Foydalanuvchiga xabar + tugma yuboriladi
       await ctx.sendMessage(ctx.from.id, resultMessage, {
-        parse_mode: "HTML",
-        ...Markup.inlineKeyboard([
-          [Markup.button.callback("🏠 Bosh sahifaga qaytish", "main_menu")],
+        parse_mode: "HTML"
         ]),
       });
     }
