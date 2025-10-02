@@ -13,9 +13,25 @@ async function importStudentData(db) {
             phone, clock, password
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
-        for (const s of defaultStudents) {
-            await db.run(insertQuery, s);
-        }
+    for (const s of defaultStudents) {
+        await db.run(insertQuery, [
+            s.class_name,
+            s.class_count,
+            s.first_name,
+            s.last_name,
+            s.father_name,
+            s.sex,
+            s.country,
+            s.is_teacher,
+            s.birthday,
+            s.telegram,
+            s.instagram,
+            s.phone,
+            s.clock,
+            s.password
+        ]);
+    }
+    
     }
     try {
         const existingCount = await db.get('SELECT COUNT(*) as count FROM students');

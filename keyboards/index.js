@@ -7,7 +7,6 @@ function getMainMenuKeyboard() {
                 { text: '📊 Hisobotlar', callback_data: 'reports' }
             ],
             [
-                {text: 'shikoyat qilish', callback_data:'complaint'},
                 { text: '❓ Yordam', callback_data: 'help' }
             ]
         ]
